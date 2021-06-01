@@ -7,6 +7,7 @@ import { map, mergeMap, catchError, tap, switchMap } from 'rxjs/operators';
 
 import * as fromServices from '../../services';
 import * as pizzaActions from '../../store/actions/pizzas.actions';
+import * as fromEnums from '../enums';
 
 @Injectable()
 export class PizzasEffects {
@@ -15,17 +16,21 @@ export class PizzasEffects {
     private pizzaService: fromServices.PizzasService
   ) {}
 
-  loadPizzas$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(pizzaActions.LOAD_PIZZAS),
-      switchMap(() =>
-        this.pizzaService.getPizzas().pipe(
-          map(
-            (pizzas) => new pizzaActions.LoadPizzasSuccess(pizzas),
-            catchError((error) => of(new pizzaActions.LoadPizzasFail(error)))
+  loadPizzas$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(fromEnums.LOAD_PIZZAS),
+        switchMap(() =>
+          this.pizzaService.getPizzas().pipe(
+            map(
+              (pizzas) => pizzaActions.LoadPizzasSuccess({ pizzas }),
+              catchError((error) => of(pizzaActions.LoadPizzasFail({ error })))
+            )
           )
         )
-      )
-    ),
+      ),
+    {
+      dispatch: true,
+    }
   );
 }
